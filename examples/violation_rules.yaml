@@ -1,0 +1,194 @@
+# Example violation handling rules configuration
+fraud_detection:
+  strategy: collect_all
+  metadata:
+    description: "Rules for detecting and handling fraud violations"
+    version: "1.0"
+  rules:
+    - name: "high_severity_fraud"
+      priority: 100
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: fraud
+          - type: field_greater_than
+            field: severity
+            value: 8
+      outcomes:
+        - type: suspend_account
+          duration: "indefinite"
+          reason: "High severity fraud detected"
+        - type: notify_support
+          priority: high
+          message: "High severity fraud detected for user"
+        - type: log_violation
+          level: error
+          details: "High severity fraud - immediate suspension required"
+
+    - name: "medium_severity_fraud"
+      priority: 50
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: fraud
+          - type: field_greater_than
+            field: severity
+            value: 5
+          - type: field_less_than
+            field: severity
+            value: 8
+      outcomes:
+        - type: add_penalty
+          points: 50
+          reason: "Medium severity fraud detected"
+        - type: notify_support
+          priority: medium
+          message: "Medium severity fraud detected"
+        - type: log_violation
+          level: warn
+
+    - name: "low_severity_fraud"
+      priority: 10
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: fraud
+          - type: field_less_than
+            field: severity
+            value: 5
+      outcomes:
+        - type: add_penalty
+          points: 10
+          reason: "Low severity fraud detected"
+        - type: log_violation
+          level: info
+
+spam_detection:
+  strategy: first_match
+  metadata:
+    description: "Rules for detecting and handling spam violations"
+    version: "1.0"
+  rules:
+    - name: "severe_spam"
+      priority: 100
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: spam
+          - type: field_greater_than
+            field: severity
+            value: 7
+      outcomes:
+        - type: suspend_account
+          duration: "7 days"
+          reason: "Severe spam violation"
+        - type: notify_user
+          message: "Your account has been suspended for 7 days due to spam violations"
+          channel: email
+
+    - name: "moderate_spam"
+      priority: 50
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: spam
+          - type: field_greater_than
+            field: severity
+            value: 4
+          - type: field_less_than
+            field: severity
+            value: 7
+      outcomes:
+        - type: add_penalty
+          points: 25
+          reason: "Moderate spam violation"
+        - type: notify_user
+          message: "You have received a penalty for spam violations"
+          channel: email
+
+    - name: "minor_spam"
+      priority: 10
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: spam
+          - type: field_less_than
+            field: severity
+            value: 4
+      outcomes:
+        - type: add_penalty
+          points: 5
+          reason: "Minor spam violation"
+        - type: log_violation
+          level: info
+
+abuse_detection:
+  strategy: collect_all
+  metadata:
+    description: "Rules for detecting and handling abuse violations"
+    version: "1.0"
+  rules:
+    - name: "harassment_detection"
+      priority: 80
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: harassment
+          - type: field_greater_than
+            field: severity
+            value: 6
+      outcomes:
+        - type: suspend_account
+          duration: "30 days"
+          reason: "Harassment violation"
+        - type: notify_support
+          priority: high
+          message: "Harassment violation detected"
+        - type: block_action
+          action_type: messaging
+          reason: "Harassment violation"
+
+    - name: "inappropriate_content"
+      priority: 40
+      enabled: true
+      condition:
+        type: and
+        conditions:
+          - type: field_equals
+            field: type
+            value: inappropriate_content
+          - type: field_greater_than
+            field: severity
+            value: 5
+      outcomes:
+        - type: add_penalty
+          points: 30
+          reason: "Inappropriate content violation"
+        - type: notify_user
+          message: "Your content has been flagged as inappropriate"
+          channel: email
+        - type: log_violation
+          level: warn
+
+
